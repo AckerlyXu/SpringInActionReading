@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.example.acxu</groupId>
+	<artifactId>hello-world</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	
+<properties>
+
+  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+<maven.compiler.source>1.8</maven.compiler.source>
+<maven.compiler.target>1.8</maven.compiler.target>
+</properties>
+	<name>helloworld</name>
+	<description>Demo project for Spring Boot</description>
+
+<dependencies>
+	<dependency>
+  	 <groupId>junit</groupId>
+  	 <artifactId>junit</artifactId>
+  	 <version>4.7</version>
+  	 <scope>test</scope>
+  	</dependency>
+</dependencies>
+  <build>
+    <plugins>
+    <plugin>
+    <!--这个插件能使jar包运行main方法  -->
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-shade-plugin</artifactId>
+    <version>1.2.1</version>
+    <executions>
+    <execution>
+     <phase>package</phase>
+     <goals>
+     <goal>shade</goal>
+     </goals>
+     <configuration>
+   <transformers>
+   <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+   <mainClass>com.example.acxu.HelloWorld</mainClass>
+   </transformer>
+   </transformers>
+     </configuration>
+    </execution>
+    </executions>
+    </plugin>
+	
+      <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-source-plugin</artifactId>
+      <version>2.1.1</version>
+      <executions>
+	 
+      <execution>
+         <id>attach-sources</id>
+		  <!--配置插件切入的声明周期，如果不配置，使用默认的，-->
+         <phase>verify</phase>
+		 <goals>
+		   <!--配置插件执行的目标-->
+		 <goal>jar-no-fork</goal>
+		 </goals>
+		 
+      </execution>
+      </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

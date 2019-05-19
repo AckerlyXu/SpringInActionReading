@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:jms="http://www.springframework.org/schema/jms"
+	xmlns:amq="http://activemq.apache.org/schema/core"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xsi:schemaLocation="http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-3.2.xsd
+		http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!-- 第一种配置连接工厂的方式 -->
+	<!-- <bean id="connectionFactory"
+	class="org.apache.activemq.spring.ActiveMQConnectionFactory"
+	>
+	<property name="brokerURL" value="tcp://192.168.25.128:61616" />
+	</bean> -->
+	<amq:connectionFactory id="connectionFactory" brokerURL="tcp://192.168.25.128:61616"></amq:connectionFactory>
+	<!-- <bean id="queue" class="org.apache.activemq.command.ActiveMQQueue">
+	<constructor-arg index="1" value="spittleQueue"  >
+	
+	</constructor-arg>
+	</bean> -->
+	<!-- 设置目的地 -->
+	<amq:queue id="spittleQueue" physicalName="spittle.alert.queue"></amq:queue>
+	
+	
+	<!--注册jmsTemplate  -->
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate"
+	> <constructor-arg ref="connectionFactory"/>
+	<!-- 设置默认的地址 -->
+           <property name="defaultDestination" ref="spittleQueue"></property>
+           <!-- 设置消息转换器，默认是SimpleMessageConvert -->
+          <!--  <property name="messageConverter" ref="messageConverter"></property> -->
+	</bean>
+	
+	<!-- 注册jackson消息转换器 -->
+	<bean id="messageConverter" class="org.springframework.jms.support.converter.MappingJackson2MessageConverter"></bean>
+	
+	
+	<!-- 注册消息监听器，用来异步地接收消息 注意这时候会与同步的消费相同的消息 -->
+	<!-- <jms:listener-container connection-factory="connectionFactory">
+	<jms:listener destination="spittle.alert.queue" ref="receiveSpittle"
+	method="handlerSpittleAlert"
+	/>
+	</jms:listener-container> -->
+	<!--注册jms远程服务对象  -->
+	<bean id="alertServiceExporter" class="org.springframework.jms.remoting.JmsInvokerServiceExporter">
+	 <property name="service" ref="alertServiceImpl"></property>
+	 <property name="serviceInterface" value="com.habuma.spittr.alerts.AlertService"></property>
+	</bean>
+	<!--为jus远程服务设置通信的代理  -->
+	<jms:listener-container connection-factory="connectionFactory">
+	<jms:listener destination="spittle.alert.queue" ref="alertServiceExporter"/>
+	</jms:listener-container>
+	
+	<!-- 配置客户端服务代理 -->
+	<bean id="alertService" class="org.springframework.jms.remoting.JmsInvokerProxyFactoryBean"
+	>
+	<property name="connectionFactory" ref="connectionFactory"></property>
+	<property name="queue" ref="spittleQueue" ></property>
+	<property name="serviceInterface" value="com.habuma.spittr.alerts.AlertService"></property>
+	</bean>
+</beans>
